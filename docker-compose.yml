@@ -1,0 +1,11 @@
+version: "3.8"
+
+services:
+  hhvm:
+    build:
+      dockerfile: Dockerfile
+    image: hhvm/hhvm:latest
+    ports:
+      - "80:80"
+    command: /usr/bin/hhvm -m server -p 80 -d /root/projects -vServer.AllowRunAsRoot=1
+    container_name: hhvm

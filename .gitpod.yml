@@ -45,14 +45,6 @@ ports:
     onOpen: ignore
     visibility: public
     name: storybook
-  - port: 8080
-    onOpen: ignore
-    visibility: public
-    name: monolith
-  - port: 8081
-    onOpen: ignore
-    visibility: public
-    name: monolith (api)
   - port: 8082
     onOpen: ignore
     visibility: public
@@ -145,3 +137,7 @@ tasks:
       yarn global add node-gyp
       yarn install
       ./build/devServer2Boot.ts
+
+  - name: Start HHVM
+    command: |
+      docker compose up
