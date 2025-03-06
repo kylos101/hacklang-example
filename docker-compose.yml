@@ -7,5 +7,7 @@ services:
     image: hhvm/hhvm:latest
     ports:
       - "80:80"
+    volumes:
+      - ./hack-examples:/root/projects
     command: /usr/bin/hhvm -m server -p 80 -d /root/projects -vServer.AllowRunAsRoot=1
     container_name: hhvm

@@ -81,6 +81,7 @@
   "hack.remote.enabled": true,
   "hack.remote.docker.containerName": "hhvm",
   "hack.remote.type": "docker",
+  "hack.remote.workspacePath": "/root/projects",
 
   "python.formatting.provider": "yapf",
   "python.globalModuleInstallation": true,
