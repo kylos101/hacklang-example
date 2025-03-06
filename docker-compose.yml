@@ -3,7 +3,7 @@ version: "3.8"
 services:
   hhvm:
     build:
-      dockerfile: Dockerfile
+      dockerfile: ./hack-examples/Dockerfile
     image: hhvm/hhvm:latest
     ports:
       - "80:80"
