@@ -8,6 +8,6 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./hack-examples:/root/projects
-    command: /usr/bin/hhvm -m server -p 80 -d /root/projects -vServer.AllowRunAsRoot=1
+      - ./:/root/projects
+    command: /usr/bin/hhvm -m server -p 80 -d /root/projects -vServer.AllowRunAsRoot=1 -d hhvm.log.level=Verbose
     container_name: hhvm
