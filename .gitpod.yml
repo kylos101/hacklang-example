@@ -1,0 +1,147 @@
+image:
+  file: dev/image/Dockerfile
+
+vscode:
+  # https://www.gitpod.io/docs/vscode-extensions#where-do-i-find-extensions
+  extensions:
+    - datasert.vscode-texty
+    - dbaeumer.vscode-eslint
+    - eamodio.gitlens
+    - editorconfig.editorconfig
+    - esbenp.prettier-vscode
+    - github.vscode-pull-request-github
+    - gitpod.gitpod-remote-ssh
+    - lokalise.i18n-ally
+    - mkhl.shfmt
+    - ms-azuretools.vscode-docker
+    - ms-python.debugpy
+    - ms-python.python
+    - ms-python.vscode-pylance
+    - pranayagarwal.vscode-hack
+    - redhat.vscode-yaml
+    - styled-components.vscode-styled-components
+    - stylelint.vscode-stylelint
+    - sysoev.language-stylus
+    - timonwong.shellcheck
+
+ports:
+  - port: 3000-12000
+    onOpen: ignore
+  - port: 3000
+    onOpen: ignore
+    name: tusk web UI
+  - port: 3306
+    onOpen: ignore
+    name: mysql
+  - port: 4080
+    onOpen: ignore
+    visibility: private
+    name: hhvm direct (no frontend assets)
+  - port: 4081
+    onOpen: ignore
+    visibility: private
+    name: hhvm admin server
+  - port: 6006
+    onOpen: ignore
+    visibility: public
+    name: storybook
+  - port: 8080
+    onOpen: ignore
+    visibility: public
+    name: monolith
+  - port: 8081
+    onOpen: ignore
+    visibility: public
+    name: monolith (api)
+  - port: 8082
+    onOpen: ignore
+    visibility: public
+    name: renderer
+  - port: 8083
+    onOpen: ignore
+    visibility: public
+    name: xhprof
+  - port: 8088
+    onOpen: ignore
+    visibility: public
+    name: fpm
+  - port: 8500
+    onOpen: ignore
+    name: consul
+  - port: 8999
+    onOpen: ignore
+    visibility: private
+    name: hhvm debugger
+  - port: 9228-9229
+    onOpen: ignore
+    visibility: public
+  - port: 11211
+    onOpen: ignore
+    name: memcached
+  - port: 63135
+    onOpen: ignore
+    name: devheh
+  - port: 33577
+    onOpen: ignore
+    name: vtgate
+    visibility: private
+
+tasks:
+  - name: Python
+    init: |
+      # Create venv
+      python -m venv venv
+      # Install dependencies
+      venv/bin/pip install -r tooling/renderer/linting/requirements.txt
+
+  # - name: Data Services
+  #   init: |
+  #     docker compose --file tooling/devenvs/services/docker-compose.yml pull mysql consul consul-template memcached fluentd
+  #     docker compose --file tooling/devenvs/services/docker-compose.yml build mysql consul consul-template memcached fluentd
+  #   command: |
+  #     docker compose --file tooling/devenvs/services/docker-compose.yml up --detach mysql consul consul-template memcached fluentd
+  #     gp sync-done "data-services"
+  #     docker compose --file tooling/devenvs/services/docker-compose.yml logs --follow mysql consul consul-template memcached fluentd
+
+  # - name: PHP Services
+  #   init: |
+  #     gp sync-await "docker-login-gar"
+  #     docker compose --file tooling/devenvs/services/docker-compose.yml pull php-nginx php-fpm redis
+  #     docker compose --file tooling/devenvs/services/docker-compose.yml build php-nginx php-fpm redis
+  #   command: |
+  #     gp sync-await "data-services"
+  #     read -n 1 -r -p "Done. Would you like to run tooling/devenvs/scripts/start-php.sh? (Y/n) "
+  #     echo # newline
+  #     if [[ $REPLY =~ ^[Yy]$ ]]; then
+  #       ./tooling/devenvs/scripts/start-php.sh
+  #     fi
+
+  # - name: HHVM
+  #   # NB: Must boot the HHVM container immediately so the VSCode Hack extension can connect to it
+  #   before: |
+  #     gp sync-await "docker-login-gar"
+  #     export DD_VERSION=$(git rev-parse HEAD)
+  #     docker compose --file tooling/devenvs/services/docker-compose.yml up --detach hhvm
+  #   init: tooling/devenvs/scripts/init-hhvm.sh
+  #   # NB: Proxygen needs a couple of requests to warm up
+  #   command: |
+  #     curl --verbose http://eventlogger.microservices2.dev.foo.com/dev_schema --data "{\"dev_name\": \"$DEVELOPER_GITHUB_USERNAME\"}"
+  #     curl --verbose http://localhost:4080
+  #     curl --verbose http://localhost:4080
+  #     docker compose --file tooling/devenvs/services/docker-compose.yml logs --follow hhvm
+
+  - name: Devheh
+    command: |
+      cd vendor/devheh
+      yarn install --no-lockfile --ignore-engines --ignore-scripts # no need to compile since it's already in dist
+      node ./dist/devheh-server.js --config ./devheh.config.yml
+
+  - name: Renderer
+    init: |
+      yarn global add node-gyp
+      yarn install
+    # Prebuilds occasionally come up in a bad state, running yarn install again to ensure things come up properly
+    command: |
+      yarn global add node-gyp
+      yarn install
+      ./build/devServer2Boot.ts
